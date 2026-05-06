@@ -55,9 +55,15 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/shared/InputHandler.c
     
     # Game implementations (placeholder - students implement these)
-    ${CMAKE_SOURCE_DIR}/game_1/Game_1.c
-    ${CMAKE_SOURCE_DIR}/game_2/Game_2.c
-    ${CMAKE_SOURCE_DIR}/game_3/Game_3.c
+${CMAKE_SOURCE_DIR}/game_1/Game_1.c
+${CMAKE_SOURCE_DIR}/game_1/maze/MazeEscape.c
+${CMAKE_SOURCE_DIR}/game_1/maze/Paddle.c
+${CMAKE_SOURCE_DIR}/game_1/maze/Guard.c
+${CMAKE_SOURCE_DIR}/game_1/maze/Map.c
+
+${CMAKE_SOURCE_DIR}/game_2/Game_2.c
+${CMAKE_SOURCE_DIR}/game_3/Game_3.c
+
 )
 
 # Add include paths
@@ -78,6 +84,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/game_1
     ${CMAKE_SOURCE_DIR}/game_2
     ${CMAKE_SOURCE_DIR}/game_3
+    ${CMAKE_SOURCE_DIR}/game_1/maze
 )
 
 # Add project symbols (macros)
