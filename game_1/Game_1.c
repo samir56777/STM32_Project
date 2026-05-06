@@ -2,103 +2,83 @@
 #include "InputHandler.h"
 #include "Menu.h"
 #include "LCD.h"
+#include "Joystick.h"
 #include "PWM.h"
 #include "Buzzer.h"
+#include "MazeEscape.h"
 #include "stm32l4xx_hal.h"
+
 #include <stdio.h>
 
 extern ST7789V2_cfg_t cfg0;
-extern PWM_cfg_t pwm_cfg;      // LED PWM control
-extern Buzzer_cfg_t buzzer_cfg; // Buzzer control
+extern Joystick_cfg_t joystick_cfg;
+extern Joystick_t joystick_data;
+extern PWM_cfg_t pwm_cfg;
+extern Buzzer_cfg_t buzzer_cfg;
 
-/**
- * @brief Game 1 Implementation - Student can modify
- * 
- * EXAMPLE: Shows how to use PWM LED for visual feedback
- * This is a placeholder with a bouncing animation that changes LED brightness.
- * Replace this with your actual game logic!
- */
+#define GAME1_FPS 60
+#define GAME1_FRAME_TIME_MS (1000 / GAME1_FPS)
 
-// Game state - customize for your game
-static uint32_t animation_counter = 0;
-static int16_t moving_x = 0;
-static int8_t move_direction = 1;
+static MazeEscape_t maze_engine;
 
-// Frame rate for this game (in milliseconds)
-#define GAME1_FRAME_TIME_MS 30  // ~33 FPS
+static void Game1_ShowIntro(void)
+{
+    LCD_Fill_Buffer(5);
+    LCD_printString("MAZE ESCAPE", 54, 95, 1, 2);
+    LCD_Refresh(&cfg0);
+    HAL_Delay(1500);
 
-MenuState Game1_Run(void) {
-    // Initialize game state
-    animation_counter = 0;
-    moving_x = 0;
-    move_direction = 1;
-    
-    // Play a brief startup sound
-    buzzer_tone(&buzzer_cfg, 1000, 30);  // 1kHz at 30% volume
-    HAL_Delay(50);  // Brief beep duration
-    buzzer_off(&buzzer_cfg);  // Stop the buzzer
-    
-    MenuState exit_state = MENU_STATE_HOME;  // Default: return to menu
-    
-    // Game's own loop - runs until exit condition
-    while (1) {
-        uint32_t frame_start = HAL_GetTick();
-        
-        // Read input
+    LCD_Fill_Buffer(5);
+    LCD_printString("Sneak past guards", 8, 70, 1, 2);
+    LCD_printString("Use joystick", 35, 105, 1, 2);
+    LCD_printString("BT3 = menu", 45, 140, 1, 2);
+    LCD_Refresh(&cfg0);
+    HAL_Delay(1500);
+}
+
+MenuState Game1_Run(void)
+{
+    MazeEscape_Init(&maze_engine, 20, 20, 8, 8);
+
+    PWM_SetDuty(&pwm_cfg, 0);
+    Game1_ShowIntro();
+
+    uint32_t last_tick = HAL_GetTick();
+
+    while (1)
+    {
+        uint32_t now = HAL_GetTick();
+
+        if ((now - last_tick) < GAME1_FRAME_TIME_MS) {
+            continue;
+        }
+
+        last_tick = now;
+
         Input_Read();
-        
-        // Check if button was pressed to return to menu
+
         if (current_input.btn3_pressed) {
-            PWM_SetDuty(&pwm_cfg, 50);  // Reset LED to 50% when returning
-            exit_state = MENU_STATE_HOME;
-            break;  // Exit game loop
+            buzzer_off(&buzzer_cfg);
+            PWM_SetDuty(&pwm_cfg, 50);
+            LCD_Fill_Buffer(0);
+            LCD_Refresh(&cfg0);
+            return MENU_STATE_HOME;
         }
-        
-        // UPDATE: Game logic
-        animation_counter++;
-        
-        // Simple animation: move object back and forth
-        moving_x += move_direction * 3;
-        if (moving_x >= 200 || moving_x <= 0) {
-            move_direction *= -1;
-        }
-        
-        // Example: Vary LED brightness based on animation
-        uint8_t brightness = (moving_x * 100) / 200;
-        PWM_SetDuty(&pwm_cfg, brightness);
-        
-        // RENDER: Draw to LCD
+
+        Joystick_Read(&joystick_cfg, &joystick_data);
+        UserInput input = Joystick_GetInput(&joystick_data);
+
+        MazeEscape_Update(&maze_engine, input);
+
         LCD_Fill_Buffer(0);
-        
-        // Title
-        LCD_printString("GAME 1", 60, 10, 1, 3);
-        
-        // Simple animated object (moving box)
-        LCD_printString("[*]", 20 + moving_x, 100, 1, 3);
-        
-        // Display counter
-        char counter[32];
-        sprintf(counter, "Frame: %lu", animation_counter);
-        LCD_printString(counter, 50, 150, 1, 2);
-        
-        // Show PWM LED usage
-        LCD_printString("LED: PWM Demo", 30, 180, 1, 1);
-        char pwm_str[32];
-        sprintf(pwm_str, "Brightness: %d%%", brightness);
-        LCD_printString(pwm_str, 30, 195, 1, 1);
-        
-        // Instructions
-        LCD_printString("Press BT3 to", 40, 220, 1, 1);
-        LCD_printString("Return to Menu", 40, 235, 1, 1);
-        
+        MazeEscape_Draw(&maze_engine);
+
+        char level_str[32];
+        sprintf(level_str, "Level: %d", maze_engine.level);
+        LCD_printString(level_str, 10, 10, 1, 1);
+
+        LCD_printString("EXIT", 180, 220, 1, 2);
+
         LCD_Refresh(&cfg0);
-        
-        // Frame timing - wait for remainder of frame time
-        uint32_t frame_time = HAL_GetTick() - frame_start;
-        if (frame_time < GAME1_FRAME_TIME_MS) {
-            HAL_Delay(GAME1_FRAME_TIME_MS - frame_time);
-        }
     }
-    
-    return exit_state;  // Tell main where to go next
 }
