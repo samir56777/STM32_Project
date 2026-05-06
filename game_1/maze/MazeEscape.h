@@ -15,7 +15,7 @@
 #include "Guard.h"
 #define GUARD_COUNT 6
 typedef struct {
-    Player_t player;
+    Paddle_t paddle;
     Guard_t guards[GUARD_COUNT];
     uint8_t alarm_triggered;
     uint8_t level;

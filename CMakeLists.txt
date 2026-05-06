@@ -57,10 +57,9 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Game implementations (placeholder - students implement these)
 ${CMAKE_SOURCE_DIR}/game_1/Game_1.c
 ${CMAKE_SOURCE_DIR}/game_1/maze/MazeEscape.c
-${CMAKE_SOURCE_DIR}/game_1/maze/Player.c
+${CMAKE_SOURCE_DIR}/game_1/maze/Paddle.c
 ${CMAKE_SOURCE_DIR}/game_1/maze/Guard.c
 ${CMAKE_SOURCE_DIR}/game_1/maze/Map.c
-${CMAKE_SOURCE_DIR}/game_1/maze/Paddle.c
 
 ${CMAKE_SOURCE_DIR}/game_2/Game_2.c
 ${CMAKE_SOURCE_DIR}/game_3/Game_3.c
