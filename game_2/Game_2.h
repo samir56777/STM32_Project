@@ -1,21 +1,74 @@
 #ifndef GAME_2_H
 #define GAME_2_H
 
+#include <stdint.h>
+#include <stdbool.h>
 #include "Menu.h"
 
-/**
- * @brief Game 2 - Student can implement their own game here
- * 
- * Placeholder for Student 2's game implementation.
- * This structure allows multiple students to work on separate games
- * while sharing common utilities from the shared/ folder.
- * 
- * The menu system calls this function when Game 2 is selected.
- * The function runs its own loop and returns when the game exits.
- * 
- * @return MenuState - Where to go next (typically MENU_STATE_HOME for menu)
- */
+#define SCREEN_WIDTH 240
+#define SCREEN_HEIGHT 240
+#define SPRITE_SCALE 2
+
+#define PLAYER_WIDTH 40
+#define PLAYER_HEIGHT 46
+#define PLAYER_Y 185
+#define PLAYER_SPEED 5
+
+#define MAX_BULLETS 6
+#define BULLET_WIDTH 4
+#define BULLET_HEIGHT 10
+#define BULLET_SPEED 8
+
+#define MAX_ENEMIES 6
+#define ENEMY_WIDTH 24
+#define ENEMY_HEIGHT 28
+#define ENEMY_SPEED_MIN 1
+#define ENEMY_SPEED_MAX 3
+
+#define STAR_COUNT 20
+
+typedef enum {
+    GAME_STATE_START = 0,
+    GAME_STATE_PLAYING,
+    GAME_STATE_GAME_OVER
+} GameState;
+
+typedef struct {
+    int x;
+    int y;
+    int lives;
+} PlayerState;
+
+typedef struct {
+    int x;
+    int y;
+    bool active;
+} Bullet;
+
+typedef struct {
+    int x;
+    int y;
+    int speed;
+    uint8_t color;
+    bool active;
+} Enemy;
+
+typedef struct {
+    int x;
+    int y;
+    int speed;
+    uint8_t color;
+} Star;
+
+typedef struct {
+    GameState state;
+} Game_2;
 
 MenuState Game2_Run(void);
 
-#endif // GAME_2_H
+void Game_2_Init(void);
+void Game_2_Reset(void);
+void Game_2_Update(void);
+void Game_2_Render(void);
+
+#endif
