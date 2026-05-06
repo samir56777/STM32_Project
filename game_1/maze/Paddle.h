@@ -1,53 +1,68 @@
 /**
- * @file Player.h
- * @brief Player object for Maze Escape game
+ * @file Paddle.h
+ * @brief Paddle object for Maze Escape game
  * 
- * Controls the player position, movement, and rendering.
- * The player is controlled by joystick input.
+ * Controls the paddle position, movement, and rendering.
+ * The paddle is controlled by joystick input.
  */
 
-#ifndef PLAYER_H
-#define PLAYER_H
+#ifndef PADDLE_H
+#define PADDLE_H
 
 #include <stdint.h>
 #include "Utils.h"
 #include "Joystick.h"
 
 /**
- * @struct Player_t
- * @brief Player object containing position, size, and score
+ * @struct Paddle_t
+ * @brief Paddle object containing position, size, and score
  */
 typedef struct {
-    int16_t x;        // Player X position (left edge)
-    int16_t y;        // Player Y position (top edge)
-    int16_t width;    // Player width
-    int16_t height;   // Player height
+    int16_t x;        // Paddle X position (left edge)
+    int16_t y;        // Paddle Y position (top edge)
+    int16_t width;    // Paddle width
+    int16_t height;   // Paddle height
     int16_t speed;    // Movement speed (pixels per frame)
     uint16_t score;   // Game score (incremented on successful hit)
-} Player_t;
+} Paddle_t;
 
 /**
- * @brief Initialize player at left side of screen
+ * @brief Initialize paddle at left side of screen
  * 
- * @param player Pointer to player object
+ * @param paddle Pointer to paddle object
  * @param x Starting X position
  * @param y Starting Y position
- * @param width Player width in pixels
- * @param height Player height in pixels
+ * @param width Paddle width in pixels
+ * @param height Paddle height in pixels
  * @param speed Movement speed in pixels/frame
  */
-void Player_Init(Player_t* player, int16_t x, int16_t y, int16_t width, int16_t height, int16_t speed);
+void Paddle_Init(Paddle_t* paddle, int16_t x, int16_t y, int16_t width, int16_t height, int16_t speed);
 
 /**
- * @brief Update player position based on joystick input
+ * @brief Update paddle position based on joystick input
  * 
- * Moves player up/down based on joystick Y direction.
- * Constrains player to stay within screen bounds.
+ * Moves paddle up/down based on joystick Y direction.
+ * Constrains paddle to stay within screen bounds.
  * 
- * @param player Pointer to player object
+ * @param paddle Pointer to paddle object
  * @param input Joystick input
  */
-void Player_Update(Player_t* player, UserInput input);
+void Paddle_Update(Paddle_t* paddle, UserInput input);
+
+/**
+ * @brief Get the AABB (Axis-Aligned Bounding Box) for the paddle
+ * 
+ * @param paddle Pointer to paddle object
+ * @return AABB structure representing the paddle's bounding box
+ */
+AABB Paddle_GetAABB(Paddle_t* paddle);
+
+/**
+ * @brief Increment the paddle's score
+ * 
+ * @param paddle Pointer to paddle object
+ */
+void Paddle_AddScore(Paddle_t* paddle);
 
 /**
  * @brief Draw player on LCD
