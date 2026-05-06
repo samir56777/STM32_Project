@@ -201,8 +201,8 @@ static void MazeEscape_LoadLevel(MazeEscape_t* engine, uint8_t level)
 
     Map_SetLevel(level);
 
-    engine->player.x = 20;
-    engine->player.y = 20;
+    engine->paddle.x = 20;
+    engine->paddle.y = 20;
 
     // Clear all guards by moving them off the screen
    
@@ -244,7 +244,7 @@ void MazeEscape_Init(MazeEscape_t* engine,
                      
                      ) {
     
-    Player_Init(&engine->player, player_x, player_y, 
+    Paddle_Init(&engine->paddle, player_x, player_y, 
                 player_width, player_height, 6);  
 
 
@@ -263,18 +263,18 @@ if (engine->game_finished) {
 if (input.direction != CENTRE) {
     engine->game_finished = 0;
     MazeEscape_LoadLevel(engine, 0);
-    engine->player.x = 20;
-    engine->player.y = 20;
+    engine->paddle.x = 20;
+    engine->paddle.y = 20;
 }
         return 0;
     }
-    Player_Update(&engine->player, input);
+    Paddle_Update(&engine->paddle, input);
     if (engine->detected_screen_active) {
         MazeEscape_UpdateBuzzer();
         if ((int32_t)(HAL_GetTick() - engine->detected_screen_until) >= 0) {
             engine->detected_screen_active = 0;
-            engine->player.x = 20;
-            engine->player.y = 20;
+            engine->paddle.x = 20;
+            engine->paddle.y = 20;
         }
 
         return 0;
@@ -290,10 +290,10 @@ if (input.direction != CENTRE) {
     engine->alarm_triggered = 0;
     for (int i = 0; i < GUARD_COUNT; i++) {
         if (Guard_CanSeePlayer(&engine->guards[i],
-                               engine->player.x,
-                               engine->player.y,
-                               engine->player.width,
-                               engine->player.height)) {
+                               engine->paddle.x,
+                               engine->paddle.y,
+                               engine->paddle.width,
+                               engine->paddle.height)) {
             engine->alarm_triggered = 1;
             break;
         }
@@ -310,12 +310,12 @@ if (input.direction != CENTRE) {
 
     // If caught by guard, reset to start
     if (engine->alarm_triggered) {
-        engine->player.x = 20;
-        engine->player.y = 20;
+        engine->paddle.x = 20;
+        engine->paddle.y = 20;
     }
 
     // Check if player reached the exit tile
-    if (Map_IsExit(engine->player.x, engine->player.y)) {
+    if (Map_IsExit(engine->paddle.x, engine->paddle.y)) {
         uint8_t level = Map_GetLevel();
 
         if (level < 2) {
@@ -350,7 +350,7 @@ LCD_printString("to start again", 46, 205, 1, 2);
         return;
     }
     Map_Draw();
-    Player_Draw(&engine->player);
+    Paddle_Draw(&engine->paddle);
         for (int i = 0; i < GUARD_COUNT; i++) {
         Guard_Draw(&engine->guards[i]);
     }

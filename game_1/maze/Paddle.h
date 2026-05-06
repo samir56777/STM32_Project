@@ -65,61 +65,10 @@ AABB Paddle_GetAABB(Paddle_t* paddle);
 void Paddle_AddScore(Paddle_t* paddle);
 
 /**
- * @brief Draw player on LCD
+ * @brief Draw the paddle on the screen
  * 
- * Draws the player as a filled rectangle at its current position.
- * 
- * @param player Pointer to player object
+ * @param paddle Pointer to paddle object
  */
-void Player_Draw(Player_t* player);
+void Paddle_Draw(Paddle_t* paddle);
 
-/**
- * @brief Get player bounding box for collision detection
- * 
- * @param player Pointer to player object
- * @return AABB structure representing the player's collision box
- */
-/*AABB Player_GetAABB(Player_t* player);*/     /*FUNCTIONNNNNNNN */ 
-
-/**
- * @brief Increment player score
- * 
- * Called when player successfully hits the ball.
- * 
- * @param player Pointer to player object
- */
-/*void Player_AddScore(Player_t* player);*/   /*FUNCTIONNNNNNNN */ 
-
-/**
- * @brief Get current score
- * 
- * @param player Pointer to player object
- * @return Current score
- */
-/*uint16_t Player_GetScore(Player_t* player);*/  /*FUNCTIONNNNNNNN */
-
-/**
- * @brief Get player position
- * 
- * @param player Pointer to player object
- * @return Current position (top-left corner)
- */
-/*Position2D Player_GetPos(Player_t* player);*/     /*FUNCTIONNNNNNNN */
-
-/**
- * @brief Get player height
- * 
- * @param player Pointer to player object
- * @return Height in pixels
- */
-/*int16_t Player_GetHeight(Player_t* player);*/   /*FUNCTIONNNNNNNN */
-
-/**
- * @brief Get player width
- * 
- * @param player Pointer to player object
- * @return Width in pixels
- */
-/*int16_t Player_GetWidth(Player_t* player); */    /*FUNCTIONNNNNNNN */
-
-#endif // PLAYER_H
+#endif
