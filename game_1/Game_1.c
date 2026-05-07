@@ -19,14 +19,6 @@ extern Buzzer_cfg_t buzzer_cfg;         // Buzzer control
 extern Joystick_cfg_t joystick_cfg;     // Joystick control
 extern Joystick_t joystick_data;
 
-// ---------------------------------------------------------------------------
-// What to add later:
-//   - More enemy types in Spawnenemy()
-//   - Extra enemy behaviours in UpdateEnemy()
-//   - More levels by adding a level ID to State_t
-// ---------------------------------------------------------------------------
-
-
 // Screen dimensions
 #define SCREEN_W              240
 #define SCREEN_H              240
@@ -128,10 +120,10 @@ static const Coordinate_t g_level_platforms[] =
     {   0, 190, 240, 60 },
 
     // Platforms
-    {  18, 160, 222, 8 },
-    {   0, 130, 200, 8 },
-    {  25,  90, 215, 8 },
-    {   0,  50, 200, 8 },
+    {   0, 160, 240, 8 },
+    {   0, 130, 240, 8 },
+    {   0,  90, 240, 8 },
+    {   0,  50, 240, 8 },
 };
 
 #define NUM_PLATFORMS 5   // number of platforms
@@ -194,12 +186,12 @@ static void HandleInput(State_t *g, UserInput input)
         }
     }
 
-    // Down input can be used later for crouch / drop-through / stealth.
-    // It is kept here as a placeholder for expansion.
+    // Drop through
     if (input.direction == S)
     {
-        // ADD crouch / slide / stealth-drop behaviour here later.
-        // For now, do nothing.
+        g->grounded = 1;
+        g->player.y = g->player.y + 1;
+        g->player_vy = -1;
     }
 
     // Keep the player inside the screen.
@@ -208,7 +200,6 @@ static void HandleInput(State_t *g, UserInput input)
 
 /**
  * @brief Apply gravity and resolve landing on top of platforms.
- * @note This is the main platforming physics step.
  */
 static void ApplyPhysics(State_t *g)
 {
@@ -229,7 +220,7 @@ static void ApplyPhysics(State_t *g)
     {
         const Coordinate_t *p = &g_level_platforms[i];
 
-        // Only resolve landing when falling or standing still.
+        // Resolve landing when falling or standing still.
         if (g->player_vy >= 0)
         {
             // Horizontal overlap with platform?
@@ -244,23 +235,6 @@ static void ApplyPhysics(State_t *g)
                     g->grounded = 1;
                 }
             }
-        }
-    }
-
-    // Fall off the bottom of the visible world.
-    // This is a simple failure condition that can be expanded later.
-    if (g->player.y > (SCREEN_H + 40))
-    {
-        if (g->lives > 0)
-        {
-            g->lives--;
-            g->player.x = 18;
-            g->player.y = 170;
-            g->player_vy = 0;
-        }
-        else
-        {
-            g->mode = STATE_LOSE;
         }
     }
 }
@@ -447,8 +421,7 @@ static void HandleAttack(State_t *g, uint8_t attack_pressed)
 }
 
 /**
- * @brief Collectibles / relics / dropped coins.
- * @note Coins are dropped by defeated enemies.
+ * @brief Check coins
  */
 static void CheckCollectables(State_t *g)
 {
@@ -514,7 +487,7 @@ static void DrawPauseMenu(uint8_t selected_option)
 
     LCD_printString("PAUSED", 74, 55, 1, 3);
 
-    if (selected_option == PAUSE_RESUME)
+    if (selected_option == 0)
     {
         LCD_printString("> RESUME", 60, 110, 1, 2);
         LCD_printString("  EXIT",   60, 140, 1, 2);
@@ -532,15 +505,14 @@ static void DrawPauseMenu(uint8_t selected_option)
 }
 
 /**
- * @brief Pause menu shown when PC2 is pressed.
- * @return 1 when exit is selected, otherwise 0.
+ * @brief Pause menu shown when button is pressed
  */
 static uint8_t ShowPauseMenu(State_t *g)
 {
-    uint8_t selected_option = PAUSE_RESUME;
+    uint8_t selected_option = 0;
     uint8_t prev_confirm = 1;
     uint8_t prev_pause = 1;
-    Direction prev_direction = CENTER;
+    Direction prev_direction = CENTRE;
     uint32_t pause_start = HAL_GetTick();
 
     DrawPauseMenu(selected_option);
@@ -550,20 +522,20 @@ static uint8_t ShowPauseMenu(State_t *g)
         Joystick_Read(&joystick_cfg, &joystick_data);
         UserInput input = Joystick_GetInput(&joystick_data);
 
-        uint8_t confirm_now = HAL_GPIO_ReadPin(ATTACK_GPIO_PORT, ATTACK_GPIO_PIN);
-        uint8_t pause_now = HAL_GPIO_ReadPin(PAUSE_GPIO_PORT, PAUSE_GPIO_PIN);
+        uint8_t confirm_now = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_3);
+        uint8_t pause_now = HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_2);
 
         // Up/down selects resume or exit.
         if ((input.direction != prev_direction) &&
             ((input.direction == N) || (input.direction == S)))
         {
-            if (selected_option == PAUSE_RESUME)
+            if (selected_option == 0)
             {
-                selected_option = PAUSE_EXIT;
+                selected_option = 1;
             }
             else
             {
-                selected_option = PAUSE_RESUME;
+                selected_option = 0;
             }
 
             DrawPauseMenu(selected_option);
@@ -591,7 +563,7 @@ static uint8_t ShowPauseMenu(State_t *g)
         // PC3 confirms the selected option.
         if ((confirm_now == GPIO_PIN_RESET) && (prev_confirm == GPIO_PIN_SET))
         {
-            if (selected_option == PAUSE_EXIT)
+            if (selected_option == 1)
             {
                 HAL_Delay(150);
                 return 1;
@@ -793,6 +765,7 @@ MenuState Game1_Run(void)
     State_t game;
     uint32_t frame_start;
     uint8_t prev_attack = 0;
+    uint8_t prev_pause = 0;
 
     Level_init(&game);
     ShowIntroScreen();
@@ -811,15 +784,24 @@ MenuState Game1_Run(void)
 
         // Read attack button.
         uint8_t attack_now = (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_3) == GPIO_PIN_RESET);
-        uint8_t attack_pressed = (attack_now != 0u) && (prev_attack == 0u);
+        uint8_t attack_pressed = (attack_now != 0) && (prev_attack == 0);
         prev_attack = attack_now;
 
+        // Read pause button
         uint8_t pause_now = (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_2) == GPIO_PIN_RESET);
-        uint8_t pause_pressed = (attack_now != 0u) && (prev_attack == 0u);
-        prev_attack = attack_now;
+        uint8_t pause_pressed = (pause_now != 0) && (prev_pause == 0);
+        prev_pause = pause_now;
 
         if (game.mode == STATE_PLAYING)
         {
+            // Check for pause
+            if (pause_pressed)
+            {
+                if (ShowPauseMenu(&game))
+                {
+                    return MENU_STATE_HOME;
+                }
+            }
             // 1) Input
             HandleInput(&game, input);
 
