@@ -66,6 +66,10 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/game_2/RunnerEngine.h
 
     ${CMAKE_SOURCE_DIR}/game_3/Game_3.c
+    ${CMAKE_SOURCE_DIR}/game_3/Tileset.c
+    ${CMAKE_SOURCE_DIR}/game_3/Enemy.c
+    ${CMAKE_SOURCE_DIR}/game_3/Character3.c
+
 )
 
 # Add include paths
