@@ -4,6 +4,14 @@
 #include "LCD.h" 
 #include "main.h"
 #include "stm32l4xx_hal.h"
+#include "PWM.h"
+#include "Buzzer.h"
+#include "Joystick.h"
+#include "InputHandler.h"
+
+extern ST7789V2_cfg_t cfg0;
+extern Joystick_cfg_t joystick_cfg;
+extern Joystick_t joystick_data;
 
 #include "rng.h"
 #include <stdint.h>
@@ -595,26 +603,14 @@ volatile uint8_t game_over = 0; // becomes 1 when the game ends
 void update_runner(UserInput input, uint8_t jumpPressed);
 void render_runner(void);
 
-int main(void)
+int Game2_Run(void)
 {
     HAL_Init(); // starts STM32 HAL
-    SystemClock_Config(); // sets up system clock
-    PeriphCommonClock_Config(); // sets up peripheral clocks
 
-    MX_GPIO_Init(); // starts GPIO pins
-    MX_USART2_UART_Init(); // starts UART debugging
-    MX_ADC1_Init(); // starts ADC for joystick
-    MX_RNG_Init(); // starts random number generator
 
     LCD_init(&cfg0); // starts LCD screen
     LCD_Set_Palette(PALETTE_VINTAGE); // sets LCD colours
 
-    MX_TIM2_Init(); // starts timer 2
-    buzzer_init(&buzzer_cfg); // starts buzzer
-
-    MX_TIM4_Init(); // starts timer 4 for PWM
-
-    Joystick_Init(&joystick_cfg); // starts joystick
 
     RunnerEngine_Init(&runner_engine); // starts the runner game
 
@@ -634,9 +630,6 @@ int main(void)
     LCD_Refresh(&cfg0);
     HAL_Delay(2000);
 
-    PWM_Init(&pwm_cfg); // starts PWM
-    PWM_SetFreq(&pwm_cfg, 1000);
-    PWM_SetDuty(&pwm_cfg, 0);
 
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET); // turns LED off
 
