@@ -1,5 +1,5 @@
-#ifndef GAME_1_H
-#define GAME_1_H
+#ifndef GAME_3_H
+#define GAME_3_H
 
 #include "Menu.h"
 
@@ -16,7 +16,7 @@
  * @return MenuState - Where to go next (typically MENU_STATE_HOME for menu)
  */
 
-MenuState Game1_Run(void);
+MenuState Game3_Run(void);
 
 typedef enum {
     STATE_PLAYING,

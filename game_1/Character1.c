@@ -1,4 +1,4 @@
-#include "Character.h"
+#include "Character1.h"
 
 #define CHARACTER_SPRITE_W 8
 #define CHARACTER_SPRITE_H 8

@@ -1,5 +1,5 @@
 #include "Enemy.h"
-#include "Character.h"
+#include "Character3.h"
 #include "LCD.h"
 
 extern int IsWall(int16_t x, int16_t y, Character_t* hero);

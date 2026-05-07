@@ -78,6 +78,6 @@ void Character_Update(Character_t* character, Joystick_t* joy);
  * - IDLE: standing sprite
  * - WALKING: animated walk cycle
  */
-void Character_Draw(Character_t* character);
+void Character3_Draw(Character_t* character);
 
 #endif // CHARACTER_H

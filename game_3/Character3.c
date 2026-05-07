@@ -1,4 +1,4 @@
-#include "Character.h"
+#include "Character3.h"
 #include "Enemy.h"
 #include "LCD.h"
 #include "Tileset.h"
@@ -233,7 +233,7 @@ void Character_Update(Character_t* character, Joystick_t* joy) {
             thief.y = 120;
             thief.Active = 1;
         }else{ // To handle the swap logic
-            if (current_input.btn9_pressed) { // I was having all sorts of problems so used button 9
+            if (current_input.btn2_pressed) { // I was having all sorts of problems so used button 9
             
                 int col = (character->x + 7) / 16;
                 int row = (character->y + 7) / 16;
@@ -273,7 +273,7 @@ void Character_Update(Character_t* character, Joystick_t* joy) {
 /**
  * Draw character sprite based on current state
  */
-void Character_Draw(Character_t* character) {
+void Character3_Draw(Character_t* character) {
     
     int16_t x_pos = character->x - 8;  // 8x8 sprite * 4x scale = 16 offset
     int16_t y_pos = character->y - 8; // Changed to 8 from 16 as the scale ofthe character has gone down by facor of 2

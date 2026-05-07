@@ -2,7 +2,7 @@
 #define ENEMY_H
 
 #include <stdint.h>
-#include "Character.h"
+#include "Character3.h"
 
 typedef enum {
     ENEMY_NONE,

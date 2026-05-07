@@ -1,10 +1,10 @@
-#include "Game_1.h"
+#include "Game_3.h"
 #include "LCD.h"
 #include "Joystick.h"
 #include "InputHandler.h"
 #include "Menu.h"
 #include "stm32l4xx_hal.h"
-#include "Character.h"
+#include "Character3.h"
 #include <stdint.h>
 #include <Tileset.h>
 #include "Enemy.h"
@@ -75,7 +75,7 @@ void draw_tile(int16_t x, int16_t y, const uint8_t *tile_data) {
 }
 
 
-void Game1_DrawMap() {
+void Game3_DrawMap() {
     for (int r = 0; r < 15; r++) {
         for (int c = 0; c < 15; c++) { // The grid is 15x15 when using 16x16 squares
             int16_t x_pos = c * 16;
@@ -103,7 +103,7 @@ void Game1_DrawMap() {
 }
 
 
-MenuState Game1_Run(void) {
+MenuState Game3_Run(void) {
     // Initialising the character
     Character_t hero;
     Character_Init(&hero);
@@ -138,9 +138,9 @@ MenuState Game1_Run(void) {
         
             // Draw the player
             Character_Update(&hero, &joystick_data);
-            Game1_DrawMap();
+            Game3_DrawMap();
             ItemHeld(&hero);
-            Character_Draw(&hero);
+            Character3_Draw(&hero);
 
             if(thief.Active == 1){
                 Enemy_Update(&thief, &hero);
