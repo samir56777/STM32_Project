@@ -578,3 +578,138 @@ uint16_t RunnerEngine_GetScore(RunnerEngine_t* engine) {
 uint8_t RunnerEngine_IsGameOver(RunnerEngine_t* engine) {
     return engine->gameOver;
 }
+
+
+
+
+
+
+// ===== RUNNER GAME VARIABLES =====
+RunnerEngine_t runner_engine; // stores the runner game data
+
+volatile uint8_t game_over = 0; // becomes 1 when the game ends
+
+#define FPS 60
+#define FRAME_TIME_MS (1000 / FPS)
+
+void update_runner(UserInput input, uint8_t jumpPressed);
+void render_runner(void);
+
+int main(void)
+{
+    HAL_Init(); // starts STM32 HAL
+    SystemClock_Config(); // sets up system clock
+    PeriphCommonClock_Config(); // sets up peripheral clocks
+
+    MX_GPIO_Init(); // starts GPIO pins
+    MX_USART2_UART_Init(); // starts UART debugging
+    MX_ADC1_Init(); // starts ADC for joystick
+    MX_RNG_Init(); // starts random number generator
+
+    LCD_init(&cfg0); // starts LCD screen
+    LCD_Set_Palette(PALETTE_VINTAGE); // sets LCD colours
+
+    MX_TIM2_Init(); // starts timer 2
+    buzzer_init(&buzzer_cfg); // starts buzzer
+
+    MX_TIM4_Init(); // starts timer 4 for PWM
+
+    Joystick_Init(&joystick_cfg); // starts joystick
+
+    RunnerEngine_Init(&runner_engine); // starts the runner game
+
+    LCD_Fill_Buffer(0); // clears screen
+    LCD_Refresh(&cfg0); // updates LCD
+
+    LCD_printString("EXTREME", 45, 40, 1, 3); // title text
+    LCD_printString("RUNNER", 35, 75, 1, 3); // title text
+    LCD_Refresh(&cfg0);
+    HAL_Delay(1000);
+
+    LCD_Fill_Buffer(0); // clears title screen
+    LCD_printString("Joystick L/R", 45, 30, 1, 2); // control text
+    LCD_printString("to Run", 75, 60, 1, 2);
+    LCD_printString(" Btn", 65, 95, 1, 2);
+    LCD_printString("to Jump", 70, 120, 1, 2);
+    LCD_Refresh(&cfg0);
+    HAL_Delay(2000);
+
+    PWM_Init(&pwm_cfg); // starts PWM
+    PWM_SetFreq(&pwm_cfg, 1000);
+    PWM_SetDuty(&pwm_cfg, 0);
+
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET); // turns LED off
+
+    printf("Runner Game Engine initialized.\n");
+
+    uint32_t last_tick = HAL_GetTick(); // stores time for frame timing
+
+    while (!game_over) // main game loop
+    {
+        uint32_t now = HAL_GetTick(); // gets current time
+
+        if ((now - last_tick) < FRAME_TIME_MS) { // waits for next frame
+            continue;
+        }
+
+        last_tick = now; // updates frame timer
+
+        Joystick_Read(&joystick_cfg, &joystick_data); // reads joystick
+        UserInput input = Joystick_GetInput(&joystick_data); // gets direction
+
+        uint8_t jumpPressed =
+        (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_2) == GPIO_PIN_RESET); // checks jump button
+
+        update_runner(input, jumpPressed); // updates game logic
+
+        render_runner(); // draws game
+    }
+
+    int16_t line_offset = 0; // moves game over text
+
+    while (1) // game over screen
+    {
+        LCD_Fill_Buffer(0);
+
+        LCD_printString("Game Over!", 20, 0 + line_offset, 1, 3);
+
+        char score_str[32];
+        sprintf(score_str, "Score: %d", RunnerEngine_GetScore(&runner_engine));
+
+        LCD_printString(score_str, 20, 20 + line_offset, 1, 2);
+
+        LCD_Refresh(&cfg0);
+        HAL_Delay(500);
+
+        line_offset += 10;
+
+        if (line_offset > 220) {
+            line_offset = 0;
+        }
+    }
+}
+
+// updates the runner game
+void update_runner(UserInput input, uint8_t jumpPressed) {
+    uint8_t running = RunnerEngine_Update(&runner_engine, input, jumpPressed);
+
+    if (running == 0) {
+        printf("Game Over! Final Score: %d\n", RunnerEngine_GetScore(&runner_engine));
+        game_over = 1;
+    }
+}
+
+// draws the runner game
+void render_runner(void) {
+    LCD_Fill_Buffer(14);
+
+    RunnerEngine_Draw(&runner_engine);
+
+    char info_str[32];
+    sprintf(info_str, "Score: %d", RunnerEngine_GetScore(&runner_engine));
+
+    LCD_printString(info_str, 130, 10, 1, 2);
+
+    LCD_Refresh(&cfg0);
+}
+// ===== Interrupt Callback
